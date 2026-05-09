@@ -366,17 +366,17 @@ a { color: inherit; text-decoration: none; }
   overflow: hidden;
 }
 
-/* Section bar */
+/* Section bar — slim ribbon under the header */
 .section-bar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0.6rem 1.5rem;
-  background: var(--surface);
+  padding: 0.4rem 1.5rem;
+  background: var(--surface-alt, var(--bg));
   border-bottom: 1px solid var(--border);
-  font-size: 0.8rem;
-  position: sticky; top: var(--header-h); z-index: 10;
+  font-size: 0.74rem;
+  flex-shrink: 0;
 }
 #section-name-display { color: var(--text-muted); font-weight: 500; }
-.q-counter { color: var(--primary); font-weight: 700; font-size: 0.85rem; }
+.q-counter { color: var(--primary); font-weight: 700; font-size: 0.78rem; }
 
 /* Question area — fills viewport so the two-pane card can scroll internally */
 .question-area {
@@ -450,21 +450,27 @@ a { color: inherit; text-decoration: none; }
 }
 .qa-card .qa-answer { margin-top: 1.25rem; }
 
-/* Question stem block (right pane, above options) */
-.q-stem {
-  background: rgba(99,102,241,0.08);
+/* Question stem now lives inside the card header (top bar) */
+.q-card-header-stem {
+  display: flex; flex-direction: column; gap: 0.55rem;
+  padding: 0.65rem 1rem 0.85rem;
+}
+.q-card-header-stem .q-card-meta { margin: 0; }
+.q-card-stem {
+  background: rgba(99,102,241,0.1);
   border-left: 3px solid var(--primary);
-  padding: 0.75rem 0.95rem;
-  margin-bottom: 1rem;
-  border-radius: 4px;
+  padding: 0.65rem 0.9rem;
+  border-radius: 6px;
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.55;
 }
-.q-stem p { margin: 0; }
-.q-stem p + p { margin-top: 0.5rem; }
-.q-stem strong { color: var(--text); }
+.q-card-stem p { margin: 0; }
+.q-card-stem p + p { margin-top: 0.4rem; }
+.q-card-stem strong { color: var(--text); }
+/* Legacy class kept for safety in case any other path still references it */
+.q-stem { display: none; }
 
 /* Toolbar that sits above each pane (font size etc.) */
 .pane-toolbar {

@@ -665,24 +665,20 @@ ${buildSubmitModal()}
     }
 
     // Two-pane: RC / DILR with shared passage or data set.
-    // Question stem lives in the card header (prominent, always visible).
-    // Left = passage. Right = options only.
-    const headerWithStem = `
-      <div class="q-card-header q-card-header-stem">
-        <div class="q-card-meta">
-          <span class="q-num-badge">Q ${idx + 1}</span>
-          <span class="q-marks-badge">
-            <i class="fas fa-star"></i> ${q.marks} marks
-            ${q.negative_marks > 0 ? `<span class="neg">−${q.negative_marks}</span>` : ''}
-          </span>
-          ${statusBadge}
-        </div>
-        ${q.question_text ? `<div class="q-card-stem">${q.question_text}</div>` : ''}
+    // Left  = passage only (with the size toolbar).
+    // Right = Q badge + marks + question stem + options.
+    const rightHeader = `
+      <div class="q-pane-meta">
+        <span class="q-num-badge">Q ${idx + 1}</span>
+        <span class="q-marks-badge">
+          <i class="fas fa-star"></i> ${q.marks} marks
+          ${q.negative_marks > 0 ? `<span class="neg">−${q.negative_marks}</span>` : ''}
+        </span>
+        ${statusBadge}
       </div>`;
 
     return `
       <div class="question-card">
-        ${headerWithStem}
         <div class="q-card-split">
           <div class="q-pane-left" style="flex: 0 0 ${splitPct}%">
             ${toolbar}
@@ -693,6 +689,8 @@ ${buildSubmitModal()}
           <div class="q-divider" id="q-divider"></div>
           <div class="q-pane-right">
             <div class="pane-content">
+              ${rightHeader}
+              ${q.question_text ? `<div class="q-stem">${q.question_text}</div>` : ''}
               ${bodyHTML}
               ${timeHTML}
               ${solutionHTML}

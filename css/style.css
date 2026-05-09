@@ -450,27 +450,27 @@ a { color: inherit; text-decoration: none; }
 }
 .qa-card .qa-answer { margin-top: 1.25rem; }
 
-/* Question stem now lives inside the card header (top bar) */
-.q-card-header-stem {
-  display: flex; flex-direction: column; gap: 0.55rem;
-  padding: 0.65rem 1rem 0.85rem;
+/* Right-pane header: small meta row above the stem */
+.q-pane-meta {
+  display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap;
+  margin-bottom: 0.85rem;
 }
-.q-card-header-stem .q-card-meta { margin: 0; }
-.q-card-stem {
+
+/* Question stem callout — sits at top of right pane, above options */
+.q-stem {
   background: rgba(99,102,241,0.1);
   border-left: 3px solid var(--primary);
-  padding: 0.65rem 0.9rem;
+  padding: 0.7rem 0.95rem;
   border-radius: 6px;
-  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  font-size: 0.96rem;
   font-weight: 500;
   color: var(--text);
   line-height: 1.55;
 }
-.q-card-stem p { margin: 0; }
-.q-card-stem p + p { margin-top: 0.4rem; }
-.q-card-stem strong { color: var(--text); }
-/* Legacy class kept for safety in case any other path still references it */
-.q-stem { display: none; }
+.q-stem p { margin: 0; }
+.q-stem p + p { margin-top: 0.4rem; }
+.q-stem strong { color: var(--text); }
 
 /* Toolbar that sits above each pane (font size etc.) */
 .pane-toolbar {

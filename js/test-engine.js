@@ -295,8 +295,6 @@ ${buildSubmitModal()}
       state.sectionTimeLeft[s] = timings[s];
     });
 
-    hide('start-modal');
-    show('start-modal'); // keep overlay hidden
     $('start-modal').classList.remove('active');
     $('start-modal').classList.add('hidden');
 

@@ -28,11 +28,89 @@
     }
     a { text-decoration: none; color: inherit; }
 
-    /* Header */
+    /* ── LOGIN OVERLAY ─────────────────────────────────────── */
+    .auth-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; overflow-y: auto;
+    }
+    .auth-overlay.hidden { display: none; }
+
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      max-width: 540px; width: 100%;
+      padding: 2.5rem 2rem;
+    }
+    .auth-card h1 {
+      font-size: 1.5rem; font-weight: 800; text-align: center; margin-bottom: 0.4rem;
+    }
+    .auth-card h1 span { color: var(--primary); }
+    .auth-sub { text-align: center; color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.75rem; }
+
+    .user-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem; margin-bottom: 1.5rem;
+    }
+    .user-tile {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.1rem 0.5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      cursor: pointer; transition: border-color 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .user-tile:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .user-tile.add-tile {
+      border-style: dashed; color: var(--text-muted);
+    }
+    .user-tile.add-tile:hover { color: var(--primary); }
+
+    .avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 700; font-size: 1.2rem;
+    }
+    .user-tile .uname {
+      font-size: 0.82rem; font-weight: 600; color: var(--text);
+      text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .user-tile .udel {
+      position: absolute; top: 4px; right: 4px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--surface-3); border: none; color: var(--text-muted);
+      font-size: 0.7rem; cursor: pointer; opacity: 0; transition: opacity 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .user-tile:hover .udel { opacity: 1; }
+    .user-tile .udel:hover { background: var(--danger); color: #fff; }
+
+    .auth-form {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem;
+      display: none; gap: 0.5rem;
+    }
+    .auth-form.show { display: flex; }
+    .auth-form input {
+      flex: 1; padding: 0.6rem 0.85rem; background: var(--surface-3);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-size: 0.9rem;
+    }
+    .auth-form input:focus { outline: none; border-color: var(--primary); }
+    .auth-form button {
+      padding: 0.6rem 1rem; background: var(--primary); color: #fff;
+      border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    }
+    .auth-form button:hover { background: var(--primary-h); }
+    .auth-hint { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; }
+
+    /* ── HEADER ─────────────────────────────────────────────── */
     .hub-header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 1.25rem 2rem;
+      padding: 1rem 2rem;
       display: flex; align-items: center; justify-content: space-between;
       position: sticky; top: 0; z-index: 50;
     }
@@ -45,21 +123,49 @@
     .logo-text h1 { font-size: 1rem; font-weight: 700; color: var(--text); }
     .logo-text p  { font-size: 0.72rem; color: var(--text-muted); }
 
-    .hub-stats {
-      display: flex; gap: 1.5rem; font-size: 0.8rem; color: var(--text-muted);
+    /* User chip in header */
+    .user-chip {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 4px 0.5rem 4px 4px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 24px; cursor: pointer;
+      transition: border-color 0.15s;
     }
-    .hs-item strong { color: var(--text); }
+    .user-chip:hover { border-color: var(--primary); }
+    .user-chip .avatar { width: 30px; height: 30px; font-size: 0.85rem; }
+    .user-chip .name { font-size: 0.83rem; font-weight: 600; }
+    .user-chip i { color: var(--text-muted); font-size: 0.7rem; }
 
-    /* Hero strip */
+    /* Dropdown */
+    .user-menu {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; min-width: 160px; padding: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      display: none;
+    }
+    .user-menu.show { display: block; }
+    .user-menu button {
+      width: 100%; text-align: left; background: none; border: none;
+      padding: 0.55rem 0.75rem; color: var(--text); font-size: 0.83rem;
+      cursor: pointer; border-radius: 5px; display: flex; align-items: center; gap: 8px;
+    }
+    .user-menu button:hover { background: var(--surface-2); }
+    .user-menu button i { width: 14px; color: var(--text-muted); }
+    .user-menu button.danger { color: var(--danger); }
+
+    .header-right { position: relative; }
+
+    /* ── HERO ───────────────────────────────────────────────── */
     .hero {
       background: linear-gradient(135deg, var(--surface) 0%, #1a1b35 100%);
       border-bottom: 1px solid var(--border);
-      padding: 2.5rem 2rem;
-      text-align: center;
+      padding: 2rem; text-align: center;
     }
-    .hero h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .hero h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.4rem; }
     .hero h2 span { color: var(--primary); }
-    .hero p { color: var(--text-muted); font-size: 0.9rem; max-width: 500px; margin: 0 auto; }
+    .hero p { color: var(--text-muted); font-size: 0.85rem; max-width: 500px; margin: 0 auto; }
+    .hero p strong { color: var(--text); }
 
     .section-pills {
       display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap;
@@ -67,15 +173,30 @@
     .pill {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 5px 12px; border-radius: 20px;
-      font-size: 0.75rem; font-weight: 600;
+      font-size: 0.72rem; font-weight: 600;
       background: var(--surface-2); border: 1px solid var(--border); color: var(--text-muted);
     }
     .pill.varc { border-color: #6366f1; color: #818cf8; background: rgba(99,102,241,0.1); }
     .pill.dilr { border-color: #22c55e; color: #4ade80; background: rgba(34,197,94,0.1); }
     .pill.qa   { border-color: #f59e0b; color: #fbbf24; background: rgba(245,158,11,0.1); }
 
-    /* Main grid */
-    .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    /* User stats strip */
+    .user-stats-strip {
+      max-width: 1100px; margin: -1rem auto 0;
+      padding: 0 2rem;
+    }
+    .stats-card {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .stats-cell { background: var(--surface); padding: 0.85rem; text-align: center; }
+    .stats-cell .v { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+    .stats-cell .l { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+    .stats-cell .v.good  { color: var(--success); }
+
+    /* ── GRID ───────────────────────────────────────────────── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
     .grid-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 1.25rem;
@@ -95,11 +216,10 @@
 
     .tests-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 1rem;
     }
 
-    /* Test card */
     .test-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -107,74 +227,61 @@
       transition: border-color 0.2s, transform 0.15s;
       display: flex; flex-direction: column;
     }
-    .test-card:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
+    .test-card:hover { border-color: var(--primary); transform: translateY(-2px); }
     .test-card.completed { border-color: rgba(34,197,94,0.3); }
 
     .card-top {
-      padding: 1.1rem 1.25rem 0.75rem;
+      padding: 1rem 1.2rem 0.6rem;
       display: flex; align-items: flex-start; justify-content: space-between;
     }
-    .card-title {
-      font-size: 1rem; font-weight: 700; color: var(--text);
-    }
-    .card-num {
-      font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;
-    }
+    .card-title { font-size: 0.95rem; font-weight: 700; }
+    .card-num { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
     .completed-badge {
       display: flex; align-items: center; gap: 4px;
-      font-size: 0.72rem; font-weight: 600; color: var(--success);
+      font-size: 0.7rem; font-weight: 600; color: var(--success);
       background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
-      padding: 3px 8px; border-radius: 20px; flex-shrink: 0;
+      padding: 3px 8px; border-radius: 20px;
     }
 
-    /* Result row (last attempt) */
     .last-result {
-      margin: 0 1.25rem 0.75rem;
+      margin: 0 1.2rem 0.6rem;
       background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: 6px; padding: 0.6rem 0.85rem;
-      font-size: 0.78rem;
+      border-radius: 6px; padding: 0.55rem 0.8rem;
     }
-    .lr-label { color: var(--text-muted); margin-bottom: 4px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .lr-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-    .lr-score { font-size: 1rem; font-weight: 700; color: var(--text); }
-    .lr-pct   { color: var(--primary); font-weight: 600; }
-    .lr-acc.good  { color: var(--success); }
-    .lr-acc.ok    { color: var(--warning); }
-    .lr-acc.poor  { color: var(--danger); }
+    .lr-label { color: var(--text-muted); margin-bottom: 4px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .lr-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; font-size: 0.78rem; }
+    .lr-score { font-size: 0.95rem; font-weight: 700; }
+    .lr-pct { color: var(--primary); font-weight: 600; }
+    .lr-acc.good { color: var(--success); }
+    .lr-acc.ok   { color: var(--warning); }
+    .lr-acc.poor { color: var(--danger); }
     .lr-date { color: var(--text-muted); margin-left: auto; }
 
-    /* Section tags */
     .card-sections {
-      padding: 0 1.25rem 0.75rem;
+      padding: 0 1.2rem 0.5rem;
       display: flex; gap: 5px;
     }
     .sec-tag {
-      font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+      font-size: 0.66rem; font-weight: 600; padding: 2px 7px; border-radius: 4px;
     }
     .sec-tag.varc { background: rgba(99,102,241,0.15); color: #818cf8; }
     .sec-tag.dilr { background: rgba(34,197,94,0.15);  color: #4ade80; }
     .sec-tag.qa   { background: rgba(245,158,11,0.15); color: #fbbf24; }
 
-    /* Attempts strip */
     .attempts-strip {
-      padding: 0 1.25rem 0.75rem;
+      padding: 0 1.2rem 0.6rem;
       display: flex; gap: 4px; align-items: center;
     }
     .attempt-dot {
-      width: 8px; height: 8px; border-radius: 50%;
+      width: 7px; height: 7px; border-radius: 50%;
       background: var(--surface-3); border: 1px solid var(--border);
-      title: "";
     }
     .attempt-dot.done { background: var(--primary); border-color: var(--primary); }
-    .attempts-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; }
+    .attempts-label { font-size: 0.68rem; color: var(--text-muted); margin-left: 4px; }
 
-    /* Card footer */
     .card-footer {
       margin-top: auto;
-      padding: 0.75rem 1.25rem;
+      padding: 0.7rem 1.2rem;
       border-top: 1px solid var(--border);
       display: flex; gap: 0.5rem;
     }
@@ -190,80 +297,114 @@
     .btn-start.retake { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
     .btn-start.retake:hover { color: var(--text); border-color: var(--primary); }
 
-    /* Footer */
     .hub-footer {
       text-align: center; padding: 2rem;
       color: var(--text-muted); font-size: 0.78rem;
-      border-top: 1px solid var(--border); margin-top: 2rem;
+      border-top: 1px solid var(--border);
     }
 
-    /* Responsive */
     @media (max-width: 640px) {
-      .hub-stats { display: none; }
-      .hero { padding: 1.5rem 1rem; }
+      .hub-header { padding: 0.75rem 1rem; }
+      .hero { padding: 1.25rem 1rem; }
       .main { padding: 1rem; }
+      .stats-card { grid-template-columns: repeat(2, 1fr); }
+      .stats-card .stats-cell:nth-child(2) { border-right: 1px solid var(--border); }
       .grid-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
     }
   </style>
 </head>
 <body>
 
-<header class="hub-header">
-  <div class="hub-logo">
-    <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
-    <div class="logo-text">
-      <h1>SIMCAT Hub</h1>
-      <p>IMS Mock Tests · CAT 2025</p>
-    </div>
-  </div>
-  <div class="hub-stats" id="hub-stats">
-    <div class="hs-item">Tests: <strong id="stat-total">—</strong></div>
-    <div class="hs-item">Completed: <strong id="stat-done">—</strong></div>
-    <div class="hs-item">Best Percentile: <strong id="stat-best">—</strong></div>
-  </div>
-</header>
+<!-- ─────────── LOGIN OVERLAY ─────────── -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <h1>SIMCAT <span>Hub</span></h1>
+    <p class="auth-sub">Pick your profile to track scores separately</p>
 
-<div class="hero">
-  <h2>IMS <span>SIMCAT</span> Series</h2>
-  <p>Full-length CAT mock tests with section-wise timing, live score, and detailed solutions.</p>
-  <div class="section-pills">
-    <span class="pill varc"><i class="fas fa-book"></i> VARC — 24 Qs</span>
-    <span class="pill dilr"><i class="fas fa-chart-bar"></i> DILR — 22 Qs</span>
-    <span class="pill qa"><i class="fas fa-square-root-alt"></i> QA — 22 Qs</span>
-    <span class="pill"><i class="fas fa-clock"></i> 120 minutes</span>
-    <span class="pill"><i class="fas fa-star"></i> 204 marks</span>
+    <div class="user-grid" id="user-grid"></div>
+
+    <form class="auth-form" id="add-user-form">
+      <input type="text" id="new-user-name" placeholder="Your name (e.g. Ash)" maxlength="20" autocomplete="off">
+      <button type="submit"><i class="fas fa-check"></i> Add</button>
+    </form>
+
+    <p class="auth-hint">Profiles and scores are saved on this device only.</p>
   </div>
 </div>
 
-<div class="main">
-  <div class="grid-header">
-    <h3>All Tests</h3>
-    <div class="filter-row">
-      <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
-      <button class="filter-btn" onclick="filterCards('pending', this)">Not Attempted</button>
-      <button class="filter-btn" onclick="filterCards('completed', this)">Completed</button>
+<!-- ─────────── HUB ─────────── -->
+<div id="hub" style="display:none">
+  <header class="hub-header">
+    <div class="hub-logo">
+      <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="logo-text">
+        <h1>SIMCAT Hub</h1>
+        <p>IMS Mock Tests · CAT 2025</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
+        <div class="avatar" id="chip-avatar"></div>
+        <span class="name" id="chip-name"></span>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+      <div class="user-menu" id="user-menu">
+        <button onclick="switchUser()"><i class="fas fa-user-friends"></i> Switch user</button>
+        <button class="danger" onclick="confirmDeleteAccount()"><i class="fas fa-trash"></i> Delete this profile</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h2>Welcome back, <span id="hero-name"></span></h2>
+    <p>Full-length CAT mock tests with section-wise timing, live score, and detailed solutions.</p>
+    <div class="section-pills">
+      <span class="pill varc"><i class="fas fa-book"></i> VARC — 24</span>
+      <span class="pill dilr"><i class="fas fa-chart-bar"></i> DILR — 22</span>
+      <span class="pill qa"><i class="fas fa-square-root-alt"></i> QA — 22</span>
+      <span class="pill"><i class="fas fa-clock"></i> 120 min</span>
+      <span class="pill"><i class="fas fa-star"></i> 204 marks</span>
     </div>
   </div>
-  <div class="tests-grid" id="tests-grid">
-    <!-- populated by JS -->
+
+  <div class="user-stats-strip">
+    <div class="stats-card">
+      <div class="stats-cell"><div class="v" id="stat-total">—</div><div class="l">Total Tests</div></div>
+      <div class="stats-cell"><div class="v good" id="stat-done">—</div><div class="l">Completed</div></div>
+      <div class="stats-cell"><div class="v" id="stat-avg">—</div><div class="l">Avg Score</div></div>
+      <div class="stats-cell"><div class="v" id="stat-best">—</div><div class="l">Best %ile</div></div>
+    </div>
   </div>
+
+  <main class="main">
+    <div class="grid-header">
+      <h3>All Tests</h3>
+      <div class="filter-row">
+        <button class="filter-btn active" data-filter="all"       onclick="filterCards('all', this)">All</button>
+        <button class="filter-btn"        data-filter="pending"   onclick="filterCards('pending', this)">Not Done</button>
+        <button class="filter-btn"        data-filter="completed" onclick="filterCards('completed', this)">Done</button>
+      </div>
+    </div>
+    <div class="tests-grid" id="tests-grid"></div>
+  </main>
+
+  <footer class="hub-footer">
+    All scores stored locally · CAT 2025 prep
+  </footer>
 </div>
 
-<footer class="hub-footer">
-  Built for CAT 2025 prep &nbsp;·&nbsp; Scores are saved locally in your browser
-</footer>
-
+<script src="js/auth.js"></script>
 <script>
   const TESTS = [
-    { id: 1,  file: 'simcat-1.html',  name: 'SIMCAT 1' },
-    { id: 2,  file: 'simcat-2.html',  name: 'SIMCAT 2' },
-    { id: 3,  file: 'simcat-3.html',  name: 'SIMCAT 3' },
-    { id: 4,  file: 'simcat-4.html',  name: 'SIMCAT 4' },
-    { id: 5,  file: 'simcat-5.html',  name: 'SIMCAT 5' },
-    { id: 6,  file: 'simcat-6.html',  name: 'SIMCAT 6' },
-    { id: 7,  file: 'simcat-7.html',  name: 'SIMCAT 7' },
-    { id: 8,  file: 'simcat-8.html',  name: 'SIMCAT 8' },
-    { id: 9,  file: 'simcat-9.html',  name: 'SIMCAT 9' },
+    { id: 1, file: 'simcat-1.html',  name: 'SIMCAT 1' },
+    { id: 2, file: 'simcat-2.html',  name: 'SIMCAT 2' },
+    { id: 3, file: 'simcat-3.html',  name: 'SIMCAT 3' },
+    { id: 4, file: 'simcat-4.html',  name: 'SIMCAT 4' },
+    { id: 5, file: 'simcat-5.html',  name: 'SIMCAT 5' },
+    { id: 6, file: 'simcat-6.html',  name: 'SIMCAT 6' },
+    { id: 7, file: 'simcat-7.html',  name: 'SIMCAT 7' },
+    { id: 8, file: 'simcat-8.html',  name: 'SIMCAT 8' },
+    { id: 9, file: 'simcat-9.html',  name: 'SIMCAT 9' },
     { id: 11, file: 'simcat-11.html', name: 'SIMCAT 11' },
     { id: 12, file: 'simcat-12.html', name: 'SIMCAT 12' },
     { id: 13, file: 'simcat-13.html', name: 'SIMCAT 13' },
@@ -274,67 +415,161 @@
     { id: 19, file: 'simcat-19.html', name: 'SIMCAT 19' },
   ];
 
-  function getResult(name) {
-    try {
-      return JSON.parse(localStorage.getItem(`simcat_result_${name} 2025`) || 'null');
-    } catch { return null; }
+  // ── Boot ───────────────────────────────────────────────────────
+  function boot() {
+    SimCatAuth.seedDummyUsers();
+
+    if (SimCatAuth.getCurrentUser()) {
+      showHub();
+    } else {
+      showLogin();
+    }
   }
 
+  function showLogin() {
+    document.getElementById('hub').style.display = 'none';
+    document.getElementById('auth-overlay').classList.remove('hidden');
+    renderUserGrid();
+  }
+
+  function showHub() {
+    const u = SimCatAuth.getCurrentUser();
+    if (!u) return showLogin();
+    document.getElementById('auth-overlay').classList.add('hidden');
+    document.getElementById('hub').style.display = '';
+
+    // Header chip
+    document.getElementById('chip-avatar').textContent = SimCatAuth.avatarInitial(u.name);
+    document.getElementById('chip-avatar').style.background = SimCatAuth.avatarColor(u.id);
+    document.getElementById('chip-name').textContent = u.name;
+    document.getElementById('hero-name').textContent = u.name;
+
+    renderGrid();
+    renderStats();
+  }
+
+  // ── Login screen ───────────────────────────────────────────────
+  function renderUserGrid() {
+    const grid = document.getElementById('user-grid');
+    const users = SimCatAuth.getUsers();
+
+    grid.innerHTML = users.map(u => `
+      <div class="user-tile" onclick="loginAs('${u.id}')">
+        <button class="udel" onclick="event.stopPropagation();deleteFromLogin('${u.id}')" title="Delete profile">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="avatar" style="background:${SimCatAuth.avatarColor(u.id)}">
+          ${SimCatAuth.avatarInitial(u.name)}
+        </div>
+        <div class="uname">${u.name}</div>
+      </div>
+    `).join('') + `
+      <div class="user-tile add-tile" onclick="document.getElementById('add-user-form').classList.add('show');document.getElementById('new-user-name').focus();">
+        <div class="avatar" style="background:var(--surface-3);color:var(--text-muted)">
+          <i class="fas fa-plus"></i>
+        </div>
+        <div class="uname">Add new</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('add-user-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const input = document.getElementById('new-user-name');
+    const name = input.value.trim();
+    if (!name) return;
+    try {
+      const u = SimCatAuth.createUser(name);
+      SimCatAuth.login(u.id);
+      input.value = '';
+      showHub();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  function loginAs(userId) {
+    SimCatAuth.login(userId);
+    showHub();
+  }
+
+  function deleteFromLogin(userId) {
+    if (!confirm('Delete this profile and all its scores?')) return;
+    SimCatAuth.deleteUser(userId);
+    renderUserGrid();
+  }
+
+  // ── Hub interactions ──────────────────────────────────────────
+  function toggleUserMenu(e) {
+    e.stopPropagation();
+    document.getElementById('user-menu').classList.toggle('show');
+  }
+  document.addEventListener('click', () => {
+    document.getElementById('user-menu')?.classList.remove('show');
+  });
+
+  function switchUser() {
+    SimCatAuth.logout();
+    showLogin();
+  }
+  function confirmDeleteAccount() {
+    const u = SimCatAuth.getCurrentUser();
+    if (!u) return;
+    if (!confirm(`Delete profile "${u.name}" and all its test scores? This cannot be undone.`)) return;
+    SimCatAuth.deleteUser(u.id);
+    showLogin();
+  }
+
+  // ── Card rendering ────────────────────────────────────────────
   function fmtDate(iso) {
     const d = new Date(iso);
     return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
   }
-
-  function accClass(pct) {
-    return pct >= 70 ? 'good' : pct >= 50 ? 'ok' : 'poor';
-  }
+  function accClass(p) { return p >= 70 ? 'good' : p >= 50 ? 'ok' : 'poor'; }
 
   function buildCard(test) {
-    const results = getResult(test.name) || [];
-    const last    = results[0] || null;
-    const done    = results.length > 0;
+    const u = SimCatAuth.getCurrentUser();
+    const attempts = SimCatAuth.getTestAttempts(u.id, test.name + ' 2025');
+    const last = attempts[0] || null;
+    const done = attempts.length > 0;
 
-    const attemptDots = Array.from({length: 5}, (_, i) =>
-      `<span class="attempt-dot ${i < results.length ? 'done' : ''}"></span>`
+    const dots = Array.from({length:5}, (_,i) =>
+      `<span class="attempt-dot ${i < attempts.length ? 'done' : ''}"></span>`
     ).join('');
 
-    const lastResultHTML = last ? `
+    const lastHTML = last ? `
       <div class="last-result">
         <div class="lr-label">Last attempt · ${fmtDate(last.date)}</div>
         <div class="lr-row">
-          <span class="lr-score">${Math.max(0,last.score).toFixed(1)} / ${last.maxScore}</span>
+          <span class="lr-score">${Math.max(0, last.score).toFixed(1)} / ${last.maxScore}</span>
           <span class="lr-pct">~${last.percentile} %ile</span>
           <span class="lr-acc ${accClass(last.attempted>0?Math.round(last.correct/last.attempted*100):0)}">
-            ${last.attempted>0?Math.round(last.correct/last.attempted*100):0}% accuracy
+            ${last.attempted>0?Math.round(last.correct/last.attempted*100):0}% acc
           </span>
         </div>
       </div>` : '';
 
     return `
-      <div class="test-card ${done?'completed':''}" data-status="${done?'completed':'pending'}" id="card-${test.id}">
+      <div class="test-card ${done?'completed':''}" data-status="${done?'completed':'pending'}">
         <div class="card-top">
           <div>
             <div class="card-title">${test.name}</div>
-            <div class="card-num">IMS 2025 · 68 Questions · 120 min</div>
+            <div class="card-num">68 Qs · 120 min · 204 marks</div>
           </div>
-          ${done ? '<div class="completed-badge"><i class="fas fa-check-circle"></i> Done</div>' : ''}
+          ${done ? '<div class="completed-badge"><i class="fas fa-check"></i> Done</div>' : ''}
         </div>
-
-        ${lastResultHTML}
-
+        ${lastHTML}
         <div class="card-sections">
           <span class="sec-tag varc">VARC</span>
           <span class="sec-tag dilr">DILR</span>
           <span class="sec-tag qa">QA</span>
         </div>
-
         <div class="attempts-strip">
-          ${attemptDots}
-          <span class="attempts-label">${results.length} attempt${results.length!==1?'s':''}</span>
+          ${dots}
+          <span class="attempts-label">${attempts.length} attempt${attempts.length!==1?'s':''}</span>
         </div>
-
         <div class="card-footer">
-          <a href="${test.file}" class="btn-start">
+          <a href="${test.file}" class="btn-start ${done?'retake':''}">
             <i class="fas fa-${done?'redo':'play'}"></i>
             ${done ? 'Retake' : 'Start Test'}
           </a>
@@ -343,41 +578,40 @@
   }
 
   function renderGrid() {
-    const grid = document.getElementById('tests-grid');
-    grid.innerHTML = TESTS.map(buildCard).join('');
-    updateStats();
+    document.getElementById('tests-grid').innerHTML = TESTS.map(buildCard).join('');
   }
 
-  function updateStats() {
-    let done = 0, bestPct = null;
+  function renderStats() {
+    const u = SimCatAuth.getCurrentUser();
+    let done = 0, pcts = [], scores = [];
     TESTS.forEach(t => {
-      const r = getResult(t.name);
-      if (r?.length) {
+      const a = SimCatAuth.getTestAttempts(u.id, t.name + ' 2025');
+      if (a.length) {
         done++;
-        const p = r[0].percentile;
-        if (!bestPct || comparePct(p, bestPct) > 0) bestPct = p;
+        const r = a[0];
+        if (r.percentile) pcts.push(parseFloat(r.percentile) || 0);
+        if (typeof r.score === 'number' && r.maxScore) {
+          scores.push((r.score / r.maxScore) * 100);
+        }
       }
     });
     document.getElementById('stat-total').textContent = TESTS.length;
     document.getElementById('stat-done').textContent  = done;
-    document.getElementById('stat-best').textContent  = bestPct || '—';
-  }
-
-  function comparePct(a, b) {
-    const parse = s => parseFloat(s) || 0;
-    return parse(a) - parse(b);
+    document.getElementById('stat-avg').textContent =
+      scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) + '%' : '—';
+    document.getElementById('stat-best').textContent =
+      pcts.length ? Math.max(...pcts) + '' : '—';
   }
 
   function filterCards(status, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    document.querySelectorAll('.test-card').forEach(card => {
-      const match = status === 'all' || card.dataset.status === status;
-      card.style.display = match ? '' : 'none';
+    document.querySelectorAll('.test-card').forEach(c => {
+      c.style.display = (status === 'all' || c.dataset.status === status) ? '' : 'none';
     });
   }
 
-  renderGrid();
+  boot();
 </script>
 </body>
 </html>

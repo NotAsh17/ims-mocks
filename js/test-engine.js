@@ -40,6 +40,12 @@
 
   // ── Boot ──────────────────────────────────────────────────────
   function boot() {
+    // Require an active user — bounce to hub login if none
+    if (!window.SimCatAuth || !SimCatAuth.getCurrentUser()) {
+      window.location.replace('index.html');
+      return;
+    }
+
     state = mkState();
     document.body.innerHTML = buildAppHTML();
 
@@ -88,6 +94,13 @@ ${buildSubmitModal()}
       <i class="fas fa-bars"></i>
     </button>
     <span class="test-name">${testData.name}</span>
+    ${(() => {
+      const u = SimCatAuth?.getCurrentUser();
+      return u ? `<span class="th-user" title="Logged in as ${u.name}">
+        <span class="th-avatar" style="background:${SimCatAuth.avatarColor(u.id)}">${SimCatAuth.avatarInitial(u.name)}</span>
+        ${u.name}
+      </span>` : '';
+    })()}
   </div>
   <div class="header-center">
     <div class="section-timer-wrap">
@@ -986,20 +999,20 @@ ${buildSubmitModal()}
   // ── Retake ────────────────────────────────────────────────────
   function retakeTest() { boot(); }
 
-  // ── localStorage ──────────────────────────────────────────────
+  // ── localStorage (namespaced by user) ─────────────────────────
   function saveResult() {
     try {
-      const r   = calcResults();
-      const key = `simcat_result_${testData.name}`;
-      const arr = JSON.parse(localStorage.getItem(key) || '[]');
-      arr.unshift({
+      const u = SimCatAuth?.getCurrentUser();
+      if (!u) return;
+      const r = calcResults();
+      SimCatAuth.saveUserResult(u.id, testData.name, {
         date: new Date().toISOString(),
         score: r.obtained, maxScore: r.totalMx,
         correct: r.correct, wrong: r.wrong,
         attempted: r.attempted, total: r.totalQ,
         percentile: r.percentile,
+        bySection: r.bySection,
       });
-      localStorage.setItem(key, JSON.stringify(arr.slice(0, 5)));
     } catch (_) {}
   }
 

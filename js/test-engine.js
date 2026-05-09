@@ -80,6 +80,7 @@
     }
 
     attachListeners();
+    setupResize();
     // Start modal is already visible
   }
 
@@ -583,6 +584,8 @@ ${buildSubmitModal()}
         </span>`;
     }
 
+    const splitPct = parseFloat(localStorage.getItem('simcat_split')) || 50;
+
     return `
       <div class="question-card">
         <div class="q-card-header">
@@ -595,12 +598,53 @@ ${buildSubmitModal()}
             ${statusBadge}
           </div>
         </div>
-        ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
-        <div class="q-body">${q.question_text}</div>
-        ${bodyHTML}
-        ${timeHTML}
-        ${solutionHTML}
+        <div class="q-card-split">
+          <div class="q-pane-left" style="flex: 0 0 ${splitPct}%">
+            ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
+            <div class="q-body">${q.question_text}</div>
+          </div>
+          <div class="q-divider" id="q-divider"></div>
+          <div class="q-pane-right">
+            ${bodyHTML}
+            ${timeHTML}
+            ${solutionHTML}
+          </div>
+        </div>
       </div>`;
+  }
+
+  // ── Drag-resize divider ───────────────────────────────────────
+  function setupResize() {
+    document.addEventListener('pointerdown', e => {
+      const div = e.target.closest('.q-divider');
+      if (!div) return;
+      const split = div.parentElement;
+      const left = div.previousElementSibling;
+      const startX = e.clientX;
+      const startW = left.offsetWidth;
+      const totalW = split.offsetWidth;
+
+      div.classList.add('dragging');
+      div.setPointerCapture(e.pointerId);
+      document.body.style.userSelect = 'none';
+      document.body.style.cursor = 'col-resize';
+
+      const onMove = ev => {
+        const newW = startW + (ev.clientX - startX);
+        const pct = Math.max(20, Math.min(80, (newW / totalW) * 100));
+        left.style.flex = `0 0 ${pct}%`;
+        localStorage.setItem('simcat_split', pct.toFixed(1));
+      };
+      const onUp = ev => {
+        div.classList.remove('dragging');
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+      };
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    });
   }
 
   // ── Option / input handlers ───────────────────────────────────

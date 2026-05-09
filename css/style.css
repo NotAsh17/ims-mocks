@@ -54,7 +54,8 @@ body {
   color: var(--text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow: hidden;
+  height: 100vh;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -253,7 +254,8 @@ a { color: inherit; text-decoration: none; }
 .layout {
   display: flex;
   padding-top: var(--header-h);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ── Sidebar ────────────────────────────────────────────────── */
@@ -352,8 +354,10 @@ a { color: inherit; text-decoration: none; }
   flex: 1;
   margin-left: var(--sidebar-w);
   display: flex; flex-direction: column;
-  min-height: calc(100vh - var(--header-h));
+  height: calc(100vh - var(--header-h));
   padding-bottom: var(--navbar-h);
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Section bar */
@@ -421,12 +425,51 @@ a { color: inherit; text-decoration: none; }
   min-height: 0;
 }
 .q-pane-left, .q-pane-right {
-  overflow: auto;
-  padding: 1.1rem 1.4rem;
-  min-width: 0;
+  display: flex; flex-direction: column;
+  min-width: 0; min-height: 0;
 }
 .q-pane-left  { flex: 1 1 50%; border-right: 1px solid var(--border); }
 .q-pane-right { flex: 1 1 50%; }
+
+.pane-content {
+  flex: 1; overflow: auto;
+  padding: 1rem 1.4rem;
+}
+
+/* Toolbar that sits above each pane (font size etc.) */
+.pane-toolbar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 1rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+.pt-label {
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+  margin-right: 4px;
+}
+.pt-btn {
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 0;
+  width: 28px; height: 22px;
+  font-weight: 700; font-family: inherit;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.pt-btn:hover { color: var(--text); border-color: var(--border-light); }
+.pt-btn.active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+.pt-btn[data-size="fs-sm"] { font-size: 0.65rem; }
+.pt-btn[data-size="fs-md"] { font-size: 0.78rem; }
+.pt-btn[data-size="fs-lg"] { font-size: 0.92rem; }
+.pt-btn[data-size="fs-xl"] { font-size: 1.05rem; }
 
 .q-divider {
   width: 5px; flex-shrink: 0; background: transparent;
@@ -779,6 +822,9 @@ body.fs-xl .q-body, body.fs-xl .q-instructions { font-size: 1.25rem; line-height
 @media (max-width: 900px) {
   :root { --sidebar-w: 0px; }
 
+  /* Mobile: allow page scroll instead of viewport-locked panes */
+  body, .layout, .main-content { height: auto; overflow: visible; }
+
   .sidebar {
     width: 270px;
     transform: translateX(-100%);
@@ -800,6 +846,7 @@ body.fs-xl .q-body, body.fs-xl .q-instructions { font-size: 1.25rem; line-height
     overflow: visible;
   }
   .q-pane-right   { flex: 1 1 auto !important; overflow: visible; }
+  .pane-content   { overflow: visible; }
   .q-divider      { display: none; }
 
   .results-hero { flex-direction: column; align-items: flex-start; }

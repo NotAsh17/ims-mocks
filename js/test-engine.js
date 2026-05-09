@@ -131,9 +131,6 @@ ${buildSubmitModal()}
     <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
   </div>
   <div class="header-right">
-    <button class="icon-btn" id="btn-font" title="Change font size">
-      <i class="fas fa-text-height"></i>
-    </button>
     <button class="icon-btn" id="btn-pause" title="Pause test" disabled>
       <i class="fas fa-pause"></i>
     </button>
@@ -328,8 +325,14 @@ ${buildSubmitModal()}
       if (inp) handleInputChange(inp.dataset.qid, inp.value.trim());
     });
 
-    // Font size cycle
-    $('btn-font').addEventListener('click', cycleFontSize);
+    // Font size buttons (delegated — they live inside each rendered question)
+    document.body.addEventListener('click', e => {
+      const btn = e.target.closest('.font-size-btn');
+      if (!btn) return;
+      applyFontSize(btn.dataset.size);
+      document.querySelectorAll('.font-size-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.size === btn.dataset.size));
+    });
 
     // Pause / Resume
     $('btn-pause').addEventListener('click', pauseTest);
@@ -585,6 +588,10 @@ ${buildSubmitModal()}
     }
 
     const splitPct = parseFloat(localStorage.getItem('simcat_split')) || 50;
+    const fs = getFontSize();
+    const fontBtns = FONT_SIZES.map(sz => `
+      <button class="pt-btn font-size-btn ${sz === fs ? 'active' : ''}"
+        data-size="${sz}" title="${FONT_LABELS[sz]}">A</button>`).join('');
 
     return `
       <div class="question-card">
@@ -600,14 +607,22 @@ ${buildSubmitModal()}
         </div>
         <div class="q-card-split">
           <div class="q-pane-left" style="flex: 0 0 ${splitPct}%">
-            ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
-            <div class="q-body">${q.question_text}</div>
+            <div class="pane-toolbar">
+              <span class="pt-label">Size</span>
+              ${fontBtns}
+            </div>
+            <div class="pane-content">
+              ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
+              <div class="q-body">${q.question_text}</div>
+            </div>
           </div>
           <div class="q-divider" id="q-divider"></div>
           <div class="q-pane-right">
-            ${bodyHTML}
-            ${timeHTML}
-            ${solutionHTML}
+            <div class="pane-content">
+              ${bodyHTML}
+              ${timeHTML}
+              ${solutionHTML}
+            </div>
           </div>
         </div>
       </div>`;

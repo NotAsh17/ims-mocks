@@ -58,7 +58,14 @@
   }
 
   // ── Sections / qIds helpers ───────────────────────────────────
-  function sections()  { return Object.keys(testData.sections); }
+  // Always present sections in CAT order: VARC → DILR → QA
+  function sections() {
+    const rank = s =>
+      s.includes('Verbal') ? 0 :
+      s.includes('Data')   ? 1 :
+      s.includes('Quant')  ? 2 : 99;
+    return Object.keys(testData.sections).sort((a, b) => rank(a) - rank(b));
+  }
   function allQIds()   { return sections().flatMap(s => testData.sections[s]); }
   function sectionOf(qId) {
     for (const [s, ids] of Object.entries(testData.sections))
@@ -614,6 +621,15 @@ ${buildSubmitModal()}
   }
 
   function navigateToQ(sec, idx) {
+    // Solution mode: jump straight to that question's solution view
+    if (state.solutionMode) {
+      const qId = testData.sections[sec][idx];
+      const ptr = state.solutionQList.findIndex(item => item[2] === qId);
+      if (ptr !== -1) showSolQuestion(ptr);
+      else toast('Not in current filter', 'info');
+      scrollTop();
+      return;
+    }
     if (sec !== state.currentSection &&
         !state.sectionSubmitted[state.currentSection] &&
         !state.testSubmitted) {
@@ -691,6 +707,11 @@ ${buildSubmitModal()}
     clearInterval(state.sectionTimerInterval);
     commitTime();
     state.testSubmitted = true;
+    // Make sure every section is flagged submitted + palette repainted
+    for (const sec of sections()) {
+      state.sectionSubmitted[sec] = true;
+      testData.sections[sec].forEach(id => updatePaletteBtn(id));
+    }
     saveResult();
     showResults();
   }
@@ -909,13 +930,14 @@ ${buildSubmitModal()}
       <button class="btn btn-ghost" id="btn-sol-next">Next <i class="fas fa-arrow-right"></i></button>
       <button class="btn btn-primary btn-sm" onclick="_showResults()">Results</button>`;
 
-    $('btn-sol-prev').addEventListener('click', () => solNav(-1));
-    $('btn-sol-next').addEventListener('click', () => solNav(1));
+    $('btn-sol-prev')?.addEventListener('click', () => solNav(-1));
+    $('btn-sol-next')?.addEventListener('click', () => solNav(1));
 
     // Enable all palette buttons in solution mode
     $$('.q-btn').forEach(b => b.classList.remove('disabled'));
-    $('btn-submit-section').style.display = 'none';
-    $('btn-mark-review').style.display    = 'none';
+    const submitBtn = $('btn-submit-section');
+    if (submitBtn) submitBtn.style.display = 'none';
+    // (btn-mark-review was inside nav-bar that we just replaced — already gone)
 
     showSolQuestion(0);
   }

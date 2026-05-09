@@ -235,7 +235,10 @@ a { color: inherit; text-decoration: none; }
 .timer-fill.warning { background: var(--warning); }
 .timer-fill.danger  { background: var(--danger); }
 
-.header-right { flex-shrink: 0; }
+.header-right {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+}
 .global-timer {
   font-size: 0.95rem; font-weight: 700;
   color: var(--text-muted); font-variant-numeric: tabular-nums;
@@ -654,6 +657,45 @@ a { color: inherit; text-decoration: none; }
 
 /* Results action buttons */
 .results-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+
+/* ── Font size scale (cycled by header A button) ────────────── */
+body.fs-sm .q-body         { font-size: 0.85rem; }
+body.fs-md .q-body         { font-size: 0.95rem; }
+body.fs-lg .q-body         { font-size: 1.08rem; line-height: 1.85; }
+body.fs-xl .q-body         { font-size: 1.2rem;  line-height: 1.9;  }
+
+body.fs-sm .opt-text       { font-size: 0.82rem; }
+body.fs-md .opt-text       { font-size: 0.9rem; }
+body.fs-lg .opt-text       { font-size: 1rem; }
+body.fs-xl .opt-text       { font-size: 1.1rem; }
+
+body.fs-sm .q-instructions, body.fs-sm .solution-body { font-size: 0.78rem; }
+body.fs-md .q-instructions, body.fs-md .solution-body { font-size: 0.85rem; }
+body.fs-lg .q-instructions, body.fs-lg .solution-body { font-size: 0.95rem; }
+body.fs-xl .q-instructions, body.fs-xl .solution-body { font-size: 1.05rem; }
+
+/* ── Pause overlay (full-screen blur) ────────────────────────── */
+.pause-overlay {
+  position: fixed; inset: 0; z-index: 800;
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  background: rgba(13,15,26,0.65);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.25s ease;
+}
+.pause-overlay.hidden { display: none; }
+.pause-box {
+  text-align: center; padding: 2rem 2.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  max-width: 90%;
+}
+.pause-icon { font-size: 3.5rem; color: var(--primary); margin-bottom: 0.5rem; }
+.pause-box h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text); }
+.pause-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+.btn-lg { padding: 0.7rem 1.6rem; font-size: 0.95rem; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* ── Toast ──────────────────────────────────────────────────── */
 .toast-container {

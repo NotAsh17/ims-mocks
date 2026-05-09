@@ -35,7 +35,26 @@
       totalTimeLeft:        totalTestTime,
       globalTimerInterval:  null,
       sectionTimerInterval: null,
+      paused:               false,
     };
+  }
+
+  // ── Font size (persists in localStorage) ──────────────────────
+  const FONT_SIZES = ['fs-sm', 'fs-md', 'fs-lg', 'fs-xl'];
+  const FONT_LABELS = { 'fs-sm':'Small', 'fs-md':'Medium', 'fs-lg':'Large', 'fs-xl':'X-Large' };
+  function getFontSize() {
+    return localStorage.getItem('simcat_fontsize') || 'fs-md';
+  }
+  function applyFontSize(cls) {
+    FONT_SIZES.forEach(c => document.body.classList.remove(c));
+    document.body.classList.add(cls);
+    localStorage.setItem('simcat_fontsize', cls);
+  }
+  function cycleFontSize() {
+    const cur = getFontSize();
+    const next = FONT_SIZES[(FONT_SIZES.indexOf(cur) + 1) % FONT_SIZES.length];
+    applyFontSize(next);
+    toast(`Font: ${FONT_LABELS[next]}`, 'info');
   }
 
   // ── Boot ──────────────────────────────────────────────────────
@@ -47,6 +66,7 @@
     }
 
     state = mkState();
+    applyFontSize(getFontSize());
     document.body.innerHTML = buildAppHTML();
 
     // Init per-section state
@@ -110,6 +130,12 @@ ${buildSubmitModal()}
     <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
   </div>
   <div class="header-right">
+    <button class="icon-btn" id="btn-font" title="Change font size">
+      <i class="fas fa-text-height"></i>
+    </button>
+    <button class="icon-btn" id="btn-pause" title="Pause test" disabled>
+      <i class="fas fa-pause"></i>
+    </button>
     <div class="global-timer" id="global-timer">${fmtGlobal(totalTestTime)}</div>
   </div>
 </header>
@@ -179,6 +205,16 @@ ${buildSubmitModal()}
 
 <div class="results-overlay hidden" id="results-overlay"></div>
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div class="pause-overlay hidden" id="pause-overlay">
+  <div class="pause-box">
+    <div class="pause-icon"><i class="fas fa-pause-circle"></i></div>
+    <h2>Test Paused</h2>
+    <p>Timer is stopped. Resume when you're ready.</p>
+    <button class="btn btn-primary btn-lg" id="btn-resume">
+      <i class="fas fa-play"></i> Resume Test
+    </button>
+  </div>
+</div>
 <div class="toast-container" id="toast-container"></div>`;
   }
 
@@ -290,6 +326,13 @@ ${buildSubmitModal()}
       const inp = e.target.closest('.input-answer');
       if (inp) handleInputChange(inp.dataset.qid, inp.value.trim());
     });
+
+    // Font size cycle
+    $('btn-font').addEventListener('click', cycleFontSize);
+
+    // Pause / Resume
+    $('btn-pause').addEventListener('click', pauseTest);
+    $('btn-resume').addEventListener('click', resumeTest);
   }
 
   // ── Start test ────────────────────────────────────────────────
@@ -318,6 +361,9 @@ ${buildSubmitModal()}
     $('start-modal').classList.remove('active');
     $('start-modal').classList.add('hidden');
 
+    const pauseBtn = $('btn-pause');
+    if (pauseBtn) pauseBtn.disabled = false;
+
     state.currentSection = secs[0];
     state.currentQIndex  = 0;
 
@@ -329,12 +375,15 @@ ${buildSubmitModal()}
     switchPalettePanel(state.currentSection);
   }
 
-  // ── Timers ────────────────────────────────────────────────────
+  // ── Timers (resume from current remaining time) ───────────────
   function startGlobalTimer() {
+    if (state.globalTimerInterval) clearInterval(state.globalTimerInterval);
     const start = Date.now();
+    const startFrom = state.totalTimeLeft || totalTestTime;
     state.globalTimerInterval = setInterval(() => {
+      if (state.paused) return;
       const elapsed = Math.floor((Date.now() - start) / 1000);
-      state.totalTimeLeft = Math.max(0, totalTestTime - elapsed);
+      state.totalTimeLeft = Math.max(0, startFrom - elapsed);
       renderGlobalTimer();
       if (state.totalTimeLeft === 0) { clearInterval(state.globalTimerInterval); submitTest(); }
     }, 1000);
@@ -343,12 +392,15 @@ ${buildSubmitModal()}
 
   function startSectionTimer(sec) {
     if (state.sectionTimerInterval) clearInterval(state.sectionTimerInterval);
-    const start     = Date.now();
-    const allocated = state.sectionTimings[sec];
+    const start = Date.now();
+    const startFrom = state.sectionTimeLeft[sec] > 0
+      ? state.sectionTimeLeft[sec]
+      : state.sectionTimings[sec];
 
     state.sectionTimerInterval = setInterval(() => {
+      if (state.paused) return;
       const elapsed = Math.floor((Date.now() - start) / 1000);
-      state.sectionTimeLeft[sec] = Math.max(0, allocated - elapsed);
+      state.sectionTimeLeft[sec] = Math.max(0, startFrom - elapsed);
       renderSectionTimer(sec);
       if (state.sectionTimeLeft[sec] === 0) {
         clearInterval(state.sectionTimerInterval);
@@ -357,6 +409,26 @@ ${buildSubmitModal()}
       }
     }, 1000);
     renderSectionTimer(sec);
+  }
+
+  // ── Pause / Resume ────────────────────────────────────────────
+  function pauseTest() {
+    if (state.paused || state.testSubmitted || !state.currentSection) return;
+    state.paused = true;
+    clearInterval(state.globalTimerInterval);
+    clearInterval(state.sectionTimerInterval);
+    commitTime();
+    $('pause-overlay')?.classList.remove('hidden');
+  }
+  function resumeTest() {
+    if (!state.paused) return;
+    state.paused = false;
+    $('pause-overlay')?.classList.add('hidden');
+    startGlobalTimer();
+    startSectionTimer(state.currentSection);
+    // Restart question time tracking
+    const qId = currentQId();
+    if (qId) state.qTimeStart[qId] = Date.now();
   }
 
   function renderGlobalTimer() {

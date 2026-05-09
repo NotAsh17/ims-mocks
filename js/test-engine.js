@@ -593,24 +593,47 @@ ${buildSubmitModal()}
       <button class="pt-btn font-size-btn ${sz === fs ? 'active' : ''}"
         data-size="${sz}" title="${FONT_LABELS[sz]}">A</button>`).join('');
 
+    const meta = `
+      <div class="q-card-header">
+        <div class="q-card-meta">
+          <span class="q-num-badge">Q ${idx + 1}</span>
+          <span class="q-marks-badge">
+            <i class="fas fa-star"></i> ${q.marks} marks
+            ${q.negative_marks > 0 ? `<span class="neg">−${q.negative_marks}</span>` : ''}
+          </span>
+          ${statusBadge}
+        </div>
+      </div>`;
+    const toolbar = `
+      <div class="pane-toolbar">
+        <span class="pt-label">Size</span>
+        ${fontBtns}
+      </div>`;
+
+    // QA section → single column (questions are self-contained, no passage)
+    const isQA = sec.includes('Quant');
+    if (isQA) {
+      return `
+        <div class="question-card qa-card">
+          ${meta}
+          ${toolbar}
+          <div class="pane-content">
+            ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
+            <div class="q-body">${q.question_text}</div>
+            <div class="qa-answer">${bodyHTML}</div>
+            ${timeHTML}
+            ${solutionHTML}
+          </div>
+        </div>`;
+    }
+
+    // VARC / DILR → two-pane split
     return `
       <div class="question-card">
-        <div class="q-card-header">
-          <div class="q-card-meta">
-            <span class="q-num-badge">Q ${idx + 1}</span>
-            <span class="q-marks-badge">
-              <i class="fas fa-star"></i> ${q.marks} marks
-              ${q.negative_marks > 0 ? `<span class="neg">−${q.negative_marks}</span>` : ''}
-            </span>
-            ${statusBadge}
-          </div>
-        </div>
+        ${meta}
         <div class="q-card-split">
           <div class="q-pane-left" style="flex: 0 0 ${splitPct}%">
-            <div class="pane-toolbar">
-              <span class="pt-label">Size</span>
-              ${fontBtns}
-            </div>
+            ${toolbar}
             <div class="pane-content">
               ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
               <div class="q-body">${q.question_text}</div>

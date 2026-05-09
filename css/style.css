@@ -436,6 +436,14 @@ a { color: inherit; text-decoration: none; }
   padding: 1rem 1.4rem;
 }
 
+/* QA single-pane: center the column for readability */
+.qa-card .pane-content {
+  max-width: 780px;
+  margin: 0 auto;
+  width: 100%;
+}
+.qa-card .qa-answer { margin-top: 1.25rem; }
+
 /* Toolbar that sits above each pane (font size etc.) */
 .pane-toolbar {
   display: flex; align-items: center; gap: 6px;

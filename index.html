@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMS SIMCAT Hub — CAT 2025</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --bg:        #0d0f1a;
+      --surface:   #161929;
+      --surface-2: #1e2235;
+      --surface-3: #252840;
+      --border:    #2e3250;
+      --text:      #e4e8f7;
+      --text-muted:#8890b0;
+      --primary:   #6366f1;
+      --primary-h: #4f52d8;
+      --success:   #22c55e;
+      --danger:    #ef4444;
+      --warning:   #f59e0b;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .hub-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .hub-logo { display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--primary); display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; color: #fff;
+    }
+    .logo-text h1 { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .logo-text p  { font-size: 0.72rem; color: var(--text-muted); }
+
+    .hub-stats {
+      display: flex; gap: 1.5rem; font-size: 0.8rem; color: var(--text-muted);
+    }
+    .hs-item strong { color: var(--text); }
+
+    /* Hero strip */
+    .hero {
+      background: linear-gradient(135deg, var(--surface) 0%, #1a1b35 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+    .hero h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .hero h2 span { color: var(--primary); }
+    .hero p { color: var(--text-muted); font-size: 0.9rem; max-width: 500px; margin: 0 auto; }
+
+    .section-pills {
+      display: flex; gap: 0.5rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap;
+    }
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text-muted);
+    }
+    .pill.varc { border-color: #6366f1; color: #818cf8; background: rgba(99,102,241,0.1); }
+    .pill.dilr { border-color: #22c55e; color: #4ade80; background: rgba(34,197,94,0.1); }
+    .pill.qa   { border-color: #f59e0b; color: #fbbf24; background: rgba(245,158,11,0.1); }
+
+    /* Main grid */
+    .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    .grid-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .grid-header h3 { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .filter-row { display: flex; gap: 0.5rem; }
+    .filter-btn {
+      padding: 5px 12px; border: 1px solid var(--border);
+      background: var(--surface-2); color: var(--text-muted);
+      border-radius: 6px; font-size: 0.78rem; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--primary); color: var(--primary);
+      background: rgba(99,102,241,0.1);
+    }
+
+    .tests-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    /* Test card */
+    .test-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
+      display: flex; flex-direction: column;
+    }
+    .test-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .test-card.completed { border-color: rgba(34,197,94,0.3); }
+
+    .card-top {
+      padding: 1.1rem 1.25rem 0.75rem;
+      display: flex; align-items: flex-start; justify-content: space-between;
+    }
+    .card-title {
+      font-size: 1rem; font-weight: 700; color: var(--text);
+    }
+    .card-num {
+      font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;
+    }
+    .completed-badge {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.72rem; font-weight: 600; color: var(--success);
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3);
+      padding: 3px 8px; border-radius: 20px; flex-shrink: 0;
+    }
+
+    /* Result row (last attempt) */
+    .last-result {
+      margin: 0 1.25rem 0.75rem;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.6rem 0.85rem;
+      font-size: 0.78rem;
+    }
+    .lr-label { color: var(--text-muted); margin-bottom: 4px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .lr-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .lr-score { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .lr-pct   { color: var(--primary); font-weight: 600; }
+    .lr-acc.good  { color: var(--success); }
+    .lr-acc.ok    { color: var(--warning); }
+    .lr-acc.poor  { color: var(--danger); }
+    .lr-date { color: var(--text-muted); margin-left: auto; }
+
+    /* Section tags */
+    .card-sections {
+      padding: 0 1.25rem 0.75rem;
+      display: flex; gap: 5px;
+    }
+    .sec-tag {
+      font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+    }
+    .sec-tag.varc { background: rgba(99,102,241,0.15); color: #818cf8; }
+    .sec-tag.dilr { background: rgba(34,197,94,0.15);  color: #4ade80; }
+    .sec-tag.qa   { background: rgba(245,158,11,0.15); color: #fbbf24; }
+
+    /* Attempts strip */
+    .attempts-strip {
+      padding: 0 1.25rem 0.75rem;
+      display: flex; gap: 4px; align-items: center;
+    }
+    .attempt-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--surface-3); border: 1px solid var(--border);
+      title: "";
+    }
+    .attempt-dot.done { background: var(--primary); border-color: var(--primary); }
+    .attempts-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; }
+
+    /* Card footer */
+    .card-footer {
+      margin-top: auto;
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex; gap: 0.5rem;
+    }
+    .btn-start {
+      flex: 1; padding: 0.55rem 1rem;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+    .btn-start:hover { background: var(--primary-h); }
+    .btn-start.retake { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+    .btn-start.retake:hover { color: var(--text); border-color: var(--primary); }
+
+    /* Footer */
+    .hub-footer {
+      text-align: center; padding: 2rem;
+      color: var(--text-muted); font-size: 0.78rem;
+      border-top: 1px solid var(--border); margin-top: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .hub-stats { display: none; }
+      .hero { padding: 1.5rem 1rem; }
+      .main { padding: 1rem; }
+      .grid-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hub-header">
+  <div class="hub-logo">
+    <div class="logo-icon"><i class="fas fa-graduation-cap"></i></div>
+    <div class="logo-text">
+      <h1>SIMCAT Hub</h1>
+      <p>IMS Mock Tests · CAT 2025</p>
+    </div>
+  </div>
+  <div class="hub-stats" id="hub-stats">
+    <div class="hs-item">Tests: <strong id="stat-total">—</strong></div>
+    <div class="hs-item">Completed: <strong id="stat-done">—</strong></div>
+    <div class="hs-item">Best Percentile: <strong id="stat-best">—</strong></div>
+  </div>
+</header>
+
+<div class="hero">
+  <h2>IMS <span>SIMCAT</span> Series</h2>
+  <p>Full-length CAT mock tests with section-wise timing, live score, and detailed solutions.</p>
+  <div class="section-pills">
+    <span class="pill varc"><i class="fas fa-book"></i> VARC — 24 Qs</span>
+    <span class="pill dilr"><i class="fas fa-chart-bar"></i> DILR — 22 Qs</span>
+    <span class="pill qa"><i class="fas fa-square-root-alt"></i> QA — 22 Qs</span>
+    <span class="pill"><i class="fas fa-clock"></i> 120 minutes</span>
+    <span class="pill"><i class="fas fa-star"></i> 204 marks</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="grid-header">
+    <h3>All Tests</h3>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="filterCards('all', this)">All</button>
+      <button class="filter-btn" onclick="filterCards('pending', this)">Not Attempted</button>
+      <button class="filter-btn" onclick="filterCards('completed', this)">Completed</button>
+    </div>
+  </div>
+  <div class="tests-grid" id="tests-grid">
+    <!-- populated by JS -->
+  </div>
+</div>
+
+<footer class="hub-footer">
+  Built for CAT 2025 prep &nbsp;·&nbsp; Scores are saved locally in your browser
+</footer>
+
+<script>
+  const TESTS = [
+    { id: 1,  file: 'simcat-1.html',  name: 'SIMCAT 1' },
+    { id: 2,  file: 'simcat-2.html',  name: 'SIMCAT 2' },
+    { id: 3,  file: 'simcat-3.html',  name: 'SIMCAT 3' },
+    { id: 4,  file: 'simcat-4.html',  name: 'SIMCAT 4' },
+    { id: 5,  file: 'simcat-5.html',  name: 'SIMCAT 5' },
+    { id: 6,  file: 'simcat-6.html',  name: 'SIMCAT 6' },
+    { id: 7,  file: 'simcat-7.html',  name: 'SIMCAT 7' },
+    { id: 8,  file: 'simcat-8.html',  name: 'SIMCAT 8' },
+    { id: 9,  file: 'simcat-9.html',  name: 'SIMCAT 9' },
+    { id: 11, file: 'simcat-11.html', name: 'SIMCAT 11' },
+    { id: 12, file: 'simcat-12.html', name: 'SIMCAT 12' },
+    { id: 13, file: 'simcat-13.html', name: 'SIMCAT 13' },
+    { id: 15, file: 'simcat-15.html', name: 'SIMCAT 15' },
+    { id: 16, file: 'simcat-16.html', name: 'SIMCAT 16' },
+    { id: 17, file: 'simcat-17.html', name: 'SIMCAT 17' },
+    { id: 18, file: 'simcat-18.html', name: 'SIMCAT 18' },
+    { id: 19, file: 'simcat-19.html', name: 'SIMCAT 19' },
+  ];
+
+  function getResult(name) {
+    try {
+      return JSON.parse(localStorage.getItem(`simcat_result_${name} 2025`) || 'null');
+    } catch { return null; }
+  }
+
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  }
+
+  function accClass(pct) {
+    return pct >= 70 ? 'good' : pct >= 50 ? 'ok' : 'poor';
+  }
+
+  function buildCard(test) {
+    const results = getResult(test.name) || [];
+    const last    = results[0] || null;
+    const done    = results.length > 0;
+
+    const attemptDots = Array.from({length: 5}, (_, i) =>
+      `<span class="attempt-dot ${i < results.length ? 'done' : ''}"></span>`
+    ).join('');
+
+    const lastResultHTML = last ? `
+      <div class="last-result">
+        <div class="lr-label">Last attempt · ${fmtDate(last.date)}</div>
+        <div class="lr-row">
+          <span class="lr-score">${Math.max(0,last.score).toFixed(1)} / ${last.maxScore}</span>
+          <span class="lr-pct">~${last.percentile} %ile</span>
+          <span class="lr-acc ${accClass(last.attempted>0?Math.round(last.correct/last.attempted*100):0)}">
+            ${last.attempted>0?Math.round(last.correct/last.attempted*100):0}% accuracy
+          </span>
+        </div>
+      </div>` : '';
+
+    return `
+      <div class="test-card ${done?'completed':''}" data-status="${done?'completed':'pending'}" id="card-${test.id}">
+        <div class="card-top">
+          <div>
+            <div class="card-title">${test.name}</div>
+            <div class="card-num">IMS 2025 · 68 Questions · 120 min</div>
+          </div>
+          ${done ? '<div class="completed-badge"><i class="fas fa-check-circle"></i> Done</div>' : ''}
+        </div>
+
+        ${lastResultHTML}
+
+        <div class="card-sections">
+          <span class="sec-tag varc">VARC</span>
+          <span class="sec-tag dilr">DILR</span>
+          <span class="sec-tag qa">QA</span>
+        </div>
+
+        <div class="attempts-strip">
+          ${attemptDots}
+          <span class="attempts-label">${results.length} attempt${results.length!==1?'s':''}</span>
+        </div>
+
+        <div class="card-footer">
+          <a href="${test.file}" class="btn-start">
+            <i class="fas fa-${done?'redo':'play'}"></i>
+            ${done ? 'Retake' : 'Start Test'}
+          </a>
+        </div>
+      </div>`;
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('tests-grid');
+    grid.innerHTML = TESTS.map(buildCard).join('');
+    updateStats();
+  }
+
+  function updateStats() {
+    let done = 0, bestPct = null;
+    TESTS.forEach(t => {
+      const r = getResult(t.name);
+      if (r?.length) {
+        done++;
+        const p = r[0].percentile;
+        if (!bestPct || comparePct(p, bestPct) > 0) bestPct = p;
+      }
+    });
+    document.getElementById('stat-total').textContent = TESTS.length;
+    document.getElementById('stat-done').textContent  = done;
+    document.getElementById('stat-best').textContent  = bestPct || '—';
+  }
+
+  function comparePct(a, b) {
+    const parse = s => parseFloat(s) || 0;
+    return parse(a) - parse(b);
+  }
+
+  function filterCards(status, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.test-card').forEach(card => {
+      const match = status === 'all' || card.dataset.status === status;
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  renderGrid();
+</script>
+</body>
+</html>

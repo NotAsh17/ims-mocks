@@ -485,6 +485,79 @@ ${buildSubmitModal()}
     updateSubmitSectionBtn(sec);
   }
 
+  // ── Heuristic split: passage vs. question stem ───────────────
+  // The IMS testData puts the entire RC passage AND the actual question
+  // ("Which of the following…", "All of the following EXCEPT:", etc.) in
+  // a single field. We try to detect the trailing stem so the right pane
+  // can show the question next to its options.
+  const STEM_PATTERNS = [
+    /^which\s+(of|one|statement|option|alternative|sentence)/i,
+    /^what\s+(is|does|are|can|would|will|might|may|do|did|was|were)\b/i,
+    /^how\s+(does|is|are|can|could|would|might|many|much|far|long)\b/i,
+    /^why\s+(is|does|are|do|did|has|have|would|might|must)\b/i,
+    /^when\s+(is|does|are|do|did|will|would)\b/i,
+    /^where\s+(is|does|are|do|did)\b/i,
+    /^who\s+(is|are|does|do|will|would|might|among)\b/i,
+    /^all\s+of\s+the\s+following/i,
+    /^each\s+of\s+the\s+following/i,
+    /^the\s+(passage|author|writer|narrator|study|paragraph|text|argument)\b/i,
+    /^the\s+main\s+(idea|point|purpose|argument|theme|conclusion)/i,
+    /^based\s+on\s+the\s+(passage|information|data)/i,
+    /^according\s+to\s+the\s+(passage|author|table|data|figure|graph|writer)/i,
+    /^from\s+the\s+(passage|paragraph|information|data|table|figure)/i,
+    /^choose\s+(the|an|one|that)/i,
+    /^identify\s+the/i,
+    /^pick\s+(the|out)/i,
+    /^select\s+the/i,
+    /^in\s+the\s+(passage|context|paragraph)/i,
+    /^as\s+used\s+in\s+the\s+passage/i,
+    /^the\s+word\s+["'].*["']\s+in\s+the\s+passage/i,
+    /^which\s+of\s+these/i,
+  ];
+
+  function isStemLike(text) {
+    if (!text) return false;
+    const t = text.trim();
+    if (t.length < 5 || t.length > 500) return false;
+    if (t.endsWith('?')) return true;
+    if (STEM_PATTERNS.some(p => p.test(t))) return true;
+    if (t.endsWith(':') && t.length < 220) return true;
+    return false;
+  }
+
+  function splitQuestionText(html) {
+    if (!html) return { passage: '', stem: '' };
+    let tmp;
+    try {
+      tmp = document.createElement('div');
+      tmp.innerHTML = html;
+    } catch { return { passage: html, stem: '' }; }
+
+    const kids = Array.from(tmp.children);
+    if (kids.length < 2) return { passage: html, stem: '' };
+
+    // Walk backwards skipping empty/blank elements
+    let lastIdx = -1;
+    for (let i = kids.length - 1; i >= 0; i--) {
+      const txt = kids[i].textContent.replace(/ /g, ' ').trim();
+      if (txt) { lastIdx = i; break; }
+    }
+    if (lastIdx <= 0) return { passage: html, stem: '' };
+
+    const lastText = kids[lastIdx].textContent.replace(/ /g, ' ').trim();
+    if (!isStemLike(lastText)) return { passage: html, stem: '' };
+
+    // Capture the stem element and any trailing empty paragraphs
+    const stemEls = kids.slice(lastIdx);
+    const passEls = kids.slice(0, lastIdx);
+    if (!passEls.length) return { passage: html, stem: '' };
+
+    return {
+      passage: passEls.map(el => el.outerHTML).join(''),
+      stem:    stemEls.map(el => el.outerHTML).join(''),
+    };
+  }
+
   // ── Render question HTML ──────────────────────────────────────
   function renderQuestion(q, qId, sec, idx, total) {
     const submitted  = state.sectionSubmitted[sec] || state.testSubmitted;
@@ -627,7 +700,18 @@ ${buildSubmitModal()}
         </div>`;
     }
 
-    // VARC / DILR → two-pane split
+    // VARC / DILR → two-pane split (passage left, stem+options right)
+    // Try to peel the question stem off the end of question_text so it
+    // sits alongside its options. Only attempt for MCQs; TITAs get the
+    // whole text on the left.
+    let passageHTML = q.question_text;
+    let stemHTML    = '';
+    if (!q.is_input_type) {
+      const split = splitQuestionText(q.question_text);
+      passageHTML = split.passage;
+      stemHTML    = split.stem;
+    }
+
     return `
       <div class="question-card">
         ${meta}
@@ -636,12 +720,13 @@ ${buildSubmitModal()}
             ${toolbar}
             <div class="pane-content">
               ${q.instructions ? `<div class="q-instructions">${q.instructions}</div>` : ''}
-              <div class="q-body">${q.question_text}</div>
+              <div class="q-body">${passageHTML}</div>
             </div>
           </div>
           <div class="q-divider" id="q-divider"></div>
           <div class="q-pane-right">
             <div class="pane-content">
+              ${stemHTML ? `<div class="q-stem">${stemHTML}</div>` : ''}
               ${bodyHTML}
               ${timeHTML}
               ${solutionHTML}
